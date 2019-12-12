@@ -19,7 +19,7 @@
 
         <!-- Google Maps Plugin for android -->
         <meta-data android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyBdaTJzKTqclCzHq84Gbp7cRoC7UiEYJ1I"/> <!--value is APIs key which get from console.cloud.google.com-->
+                android:value="API KEY HERE"/> <!--value is APIs key which get from console.cloud.google.com-->
 
         <activity
             android:name=".MainActivity"
