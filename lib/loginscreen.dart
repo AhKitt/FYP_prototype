@@ -16,6 +16,7 @@ final TextEditingController _emcontroller = TextEditingController();
 String _email = "";
 final TextEditingController _passcontroller = TextEditingController();
 String _password = "";
+bool _isEmpty = true;
 bool _isChecked = false;
 Advertiser advertiser;
 
@@ -49,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
         
         onWillPop: _onBackPressAppBar,
         child: Scaffold(
-          resizeToAvoidBottomPadding: false,
+          resizeToAvoidBottomInset: false,
           body: new Container(
             decoration: new BoxDecoration(color: Color.fromRGBO(199, 241, 255, 1)),
             padding: EdgeInsets.all(30.0),
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.push(
               context, 
               MaterialPageRoute(
-                builder: (context) => MainScreen()
+                builder: (context) => MainScreen(advertiser: advertiser)
                 )
           );
         }else{
@@ -285,6 +286,14 @@ class _LoginPageState extends State<LoginPage> {
       print('Remove pref');
       Toast.show("Preferences have been removed", context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+    }
+  }
+
+  bool _isEmailEmpty(String email){
+    if (email=null){
+      return true;
+    }else {
+      return false;
     }
   }
 
