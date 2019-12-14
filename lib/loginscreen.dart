@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:prototype3/forgotpassword.dart';
 import 'package:prototype3/mainscreen.dart';
-import 'package:prototype3/mainscreen2.dart';
 import 'package:prototype3/registerscreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
@@ -52,14 +51,14 @@ class _LoginPageState extends State<LoginPage> {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           body: new Container(
-            decoration: new BoxDecoration(color: Color.fromRGBO(199, 241, 255, 1)),
+            //decoration: new BoxDecoration(color: Color.fromRGBO(199, 241, 255, 1)),
             padding: EdgeInsets.all(30.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Image.asset(
-                  'assets/images/ahhh.jpg',
-                  scale: 1.5,
+                  'assets/images/lbas.jpg',
+                  scale: 3.5,
                 ),
                 TextField(
                     controller: _emcontroller,
@@ -89,18 +88,18 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   height: 10,
                 ),
-                Row(
-                  children: <Widget>[
-                    Checkbox(
-                      checkColor: Colors.grey,
-                      value: _isChecked,
-                      onChanged: (bool value) {
-                        _onChange(value);
-                      },
-                    ),
-                    Text('Remember Me', style: TextStyle(fontSize: 16))
-                  ],
-                ),
+                // Row(
+                //   children: <Widget>[
+                //     Checkbox(
+                //       checkColor: Colors.grey,
+                //       value: _isChecked,
+                //       onChanged: (bool value) {
+                //         _onChange(value);
+                //       },
+                //     ),
+                //     Text('Remember Me', style: TextStyle(fontSize: 16))
+                //   ],
+                // ),
                 SizedBox(
                   height: 10,
                 ),
@@ -138,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_isEmailValid(_email) && (_password.length > 4)) {
       ProgressDialog pr = new ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(message: "Login in");
+      pr.style(message: "Login");
       pr.show();
       http.post(urlLogin, body: {
         "email": _email,
@@ -154,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
           pr.dismiss();
           print(dres);
           print(dres[1]);
-          Advertiser advertiser = new Advertiser(name:dres[1], email:dres[2], phone:dres[3]);
+          Advertiser advertiser = new Advertiser(name:dres[1], email:dres[2], phone:dres[3], address: dres[4]);
           Navigator.push(
               context, 
               MaterialPageRoute(

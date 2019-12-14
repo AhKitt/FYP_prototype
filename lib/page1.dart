@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:prototype3/advertiser.dart';
 import 'package:prototype3/loginscreen.dart';
@@ -7,8 +8,7 @@ import 'package:toast/toast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/services.dart';
 import 'package:progress_dialog/progress_dialog.dart';
-import 'package:place_picker/place_picker.dart';
-import 'dart:convert';
+// import 'package:place_picker/place_picker.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -19,21 +19,20 @@ void main() => runApp(Page1());
 
 File _image;
 String pathAsset = 'assets/images/upload.jpg';
-String urlUpload = "http://mobilehost2019.com/LBAS/php/upload_job.php";
+String urlUpload = "http://mobilehost2019.com/LBAS/php/upload_ads.php";
 String urlgetuser = "http://mobilehost2019.com/LBAS/php/get_user.php";
 
 final TextEditingController _titlecontroller = TextEditingController();
 final TextEditingController _desccontroller = TextEditingController();
-final TextEditingController _radiuscontroller = TextEditingController();
+final TextEditingController _addcontroller = TextEditingController();
 final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-Position _currentPosition;
 String _title, _description, _radius, _latitude, _longitude; 
 double _sliderValue = 5;
 String _currentAddress = "Searching your current location...";
 // double _currentLatitude = 6.45751;
 // double _currentLongitude = 100.505;
-double _currentLatitude;
-double _currentLongitude;
+// double _currentLatitude;
+// double _currentLongitude;
 
 class Page1 extends StatefulWidget {
   final Advertiser advertiser;
@@ -44,41 +43,29 @@ class Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<Page1> {
-  //Completer<GoogleMapController> _controller = Completer();
   List<Marker> allMarkers = [];
   Position position;
   GoogleMapController _controller;
-  Widget  _child;
-
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    //target: LatLng(6.45751, 100.505),
-    target: LatLng(_currentLatitude, _currentLongitude),
-    zoom: 17.0,
-  );
+  Widget _myMap;
+  List<DropdownMenuItem<String>> _dropDownMenuItems;
+  String _period;
+  
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    print("below here is page1");
     _sliderValue = 5.0;
     //_getCurrentLocation();
-    print("This is latitude: $_currentLatitude");
-    print("This is latitude: $_currentLongitude");
-    //_child=RippleIndicator("Getting Location");
-    _getCurrentLocation2();
+    // print("This is latitude: $_currentLatitude");
+    // print("This is latitude: $_currentLongitude");
+    _getCurrentLocation();
     print("latitude: $position.latitude");
     print("latitude: $position.longitude");
-
-    /*allMarkers.add(Marker(
-      markerId: MarkerId('myMarker'),
-      draggable: false,
-      onTap: (){
-        print('add marker here');
-      },
-      position: LatLng(_currentLatitude, _currentLongitude)
-      //position: LatLng(6.45751, 100.505)
-    ));*/
-    //addMarker();
+    print(widget.advertiser.email);
+    _dropDownMenuItems = _getDropDownMenuItems();
+    _period = _dropDownMenuItems[0].value;
   }
 
   @override
@@ -98,8 +85,8 @@ class _Page1State extends State<Page1> {
               GestureDetector(
                 onTap: _choose,
                 child: Container(
-                  width: 350,
-                  height: 200,
+                  width: 280,
+                  height: 250,
                   decoration: BoxDecoration(
                       image: DecorationImage(
                     image:
@@ -110,12 +97,15 @@ class _Page1State extends State<Page1> {
               ),
               SizedBox(height: 10.0),
               Text(_image == null
-                ? 'Click on image above to take profile picture': '',
+                ? 'Click on image above to upload advertisement image': '',
                 style: new TextStyle(fontSize: 16.0)
               ),
               SizedBox(height: 10.0),
               Container(
-                color: Color.fromRGBO(215, 248, 250, 1),
+                //color: Color.fromRGBO(215, 248, 250, 1),
+                decoration: BoxDecoration(
+                  border: Border()
+                ),
                 padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,26 +134,47 @@ class _Page1State extends State<Page1> {
                         )
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    SizedBox(height: 2.0,),
+                    Text('Address : ',
+                      style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
+                    ),
+                    TextField(
+                      controller: _addcontroller,
+                      keyboardType: TextInputType.text,     
+                    ),
+                    Divider(thickness: 2.0, height: 50,),
+                    // SizedBox(height: 20.0),
                     Text('Radius : ',
                       style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 3.0),
-                    Slider(
-                      activeColor: Colors.indigoAccent,
-                      min: 5.0,
-                      max: 20.0,
-                      onChanged: (newRating) {
-                        setState(() => _sliderValue = newRating);
-                      },
-                      value: _sliderValue,
-                    ),
-                    Center(
-                      child: Text(((_sliderValue)).round().toString() + ' KM',
-                        style: TextStyle(fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
+                    Container(
+                      padding: EdgeInsets.all(5.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1.0,
+                          color: Colors.blueGrey,
                         ),
+                        borderRadius: BorderRadius.all(Radius.circular(5.0) ),
                       ),
+                      child: Column(children: <Widget>[
+                        Slider(
+                          activeColor: Colors.indigoAccent,
+                          min: 5.0,
+                          max: 50.0,
+                          onChanged: (newRating) {
+                            setState(() => _sliderValue = newRating);
+                          },
+                          value: _sliderValue,
+                        ),
+                        Center(
+                          child: Text(((_sliderValue)).round().toString() + ' KM',
+                            style: TextStyle(fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],)
                     ),
                     SizedBox(height: 10.0),
                     Row(
@@ -188,20 +199,31 @@ class _Page1State extends State<Page1> {
                     SizedBox(height: 10.0),
                     Center(
                       child: Container(
-                          height: 160,
-                          width: 340,
-                          child: _child,
-                          // child: GoogleMap(
-                          //   mapType: MapType.normal,
-                          //   initialCameraPosition: _kGooglePlex,
-                          //   onMapCreated: (GoogleMapController controller) {
-                          //   _controller.complete(controller);
-                          //   },
-                          //   markers: Set.from(allMarkers),
-                          // ),
+                          height: 180,
+                          width: 350,
+                          child: _myMap, //googleMap here
                         ),
                     ),
-                      SizedBox(height: 20),
+                    SizedBox(height: 15.0),
+                    Row(
+                      children: <Widget>[
+                        Text("Period : ",
+                              style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 10.0),
+                        DropdownButton(
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                          ),
+                          value: _period,
+                          items: _dropDownMenuItems,
+                          onChanged: changedDropDownItem,
+                        ),
+                      ],
+                    ), 
+                    
+                    SizedBox(height: 20),
                       Center(
                         child: MaterialButton(
                           shape: RoundedRectangleBorder(
@@ -212,7 +234,7 @@ class _Page1State extends State<Page1> {
                           color: Colors.blueAccent,
                           textColor: Colors.white,
                           elevation: 15,
-                          onPressed: (){},
+                          onPressed: _onAdvertise,
                         ),
                       ),
                   ],
@@ -226,16 +248,19 @@ class _Page1State extends State<Page1> {
     ));
   }
 
+  //----------------------------------Below here are general method----------------------------------
+
   Future<bool> _onBackPressAppBar() async {
     _image=null;
     _titlecontroller.text='';
     _desccontroller.text='';
+    _addcontroller.text = "";
     _sliderValue = 0;
     _currentAddress = "Searching your current location...";
     Navigator.pop(
         context,
         MaterialPageRoute(
-          builder: (context) => MainScreen(advertiser: advertiser),
+          builder: (context) => MainScreen(advertiser: widget.advertiser),
         ));
     return Future.value(false);
   }
@@ -250,35 +275,100 @@ class _Page1State extends State<Page1> {
     }
   }
 
-  Future<void> addMarker() async{
-    await _getCurrentLocation();
-    allMarkers.add(Marker(
-      markerId: MarkerId('myMarker'),
-      draggable: false,
-      onTap: (){
-        print('add marker here');
-      },
-      position: LatLng(_currentLatitude, _currentLongitude)
-      //position: LatLng(6.45751, 100.505)
-    ));
+  void _onAdvertise() {
+    print(widget.advertiser.email);
+    print(_titlecontroller.text);
+    print(_desccontroller.text);
+    print(_addcontroller.text);
+    print((_sliderValue).round());
+    print((position.latitude).toString());
+    print((position.longitude).toString());
+    print(_period);
+    if (_image == null) {
+      Toast.show("Please upload your advertisement", context,
+          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      return;
+    }
+    if (_titlecontroller.text.isEmpty) {
+      Toast.show("Please enter advertisement title", context,
+          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      return;
+    }
+    
+    ProgressDialog pr = new ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(message: "Requesting...");
+    pr.show();
+    String base64Image = base64Encode(_image.readAsBytesSync());
+    print(position.latitude.toString() +
+        "/" +
+        position.longitude.toString());
+
+    http.post(urlUpload, body: {
+      "encoded_string": base64Image,
+      "email": widget.advertiser.email,
+      "title": _titlecontroller.text,
+      "desc": _desccontroller.text,
+      "address": _addcontroller.text,
+      "radius": ((_sliderValue).round()).toString(),
+      "lat": (position.latitude).toString(),
+      "lng": (position.longitude).toString(),
+      "period": _period,
+    }).then((res) {
+      print(urlUpload);
+      Toast.show(res.body, context,
+          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      if (res.body.contains("success")) {
+        _image = null;
+        _titlecontroller.text = "";
+        _desccontroller.text = "";
+        _addcontroller.text = "";
+        _sliderValue = 5.0;
+        pr.dismiss();
+        print(widget.advertiser.email);
+        _onLogin(widget.advertiser.email, context);
+      } else {
+        pr.dismiss();
+        Toast.show(res.body + ". Please reload", context,
+            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      }
+    }).catchError((err) {
+      print(err);
+      pr.dismiss();
+    });
   }
 
-  _getCurrentLocation2() async{
-    Position res = await Geolocator().getCurrentPosition();
-    setState((){
-      position = res;
-      _child = mapWidget();
+  void _onLogin(String email, BuildContext ctx) {
+    http.post(urlgetuser, body: {
+      "email": email,
+    }).then((res) {
+      print(res.statusCode);
+      var string = res.body;
+      List dres = string.split(",");
+      print(dres);
+      if (dres[0] == "success") {
+        Advertiser advertiser = new Advertiser(
+            name: dres[1],
+            email: dres[2],
+            phone: dres[3],
+            address: dres[4],);
+        Navigator.push(ctx,
+            MaterialPageRoute(builder: (context) => MainScreen(advertiser: advertiser)));
+      }
+    }).catchError((err) {
+      print(err);
     });
-    _getAddressFromLatLng();
   }
+
+  //----------------------------------Below here are google map method----------------------------------
 
   Widget mapWidget(){
     return GoogleMap(
-      mapType: MapType.normal,
+      mapType: MapType.hybrid,
       markers: _createMarker(),
       initialCameraPosition: CameraPosition(
         target: LatLng(position.latitude, position.longitude),
-        zoom: 13.0,
+        zoom: 12.0,
       ),
       onMapCreated: (GoogleMapController controller){
         _controller = controller;
@@ -297,28 +387,19 @@ class _Page1State extends State<Page1> {
     ].toSet();
   }
 
-
-  _getCurrentLocation() async {
-    geolocator
-      .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-      .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-        _currentLatitude = double.parse((position.latitude).toString());
-        _currentLongitude = double.parse((position.longitude).toString());
-        print(_getCurrentLocation);
-      });
-
-      _getAddressFromLatLng();
-    }).catchError((e) {
-      print(e);
+  _getCurrentLocation() async{
+    Position res = await Geolocator().getCurrentPosition();
+    setState((){
+      position = res;
+      _myMap = mapWidget();
     });
+    _getAddressFromLatLng();
   }
 
   _getAddressFromLatLng() async {
     try {
       List<Placemark> p = await geolocator.placemarkFromCoordinates(
-          position.latitude, position.longitude);
+        position.latitude, position.longitude);
 
       Placemark place = p[0];
 
@@ -330,6 +411,27 @@ class _Page1State extends State<Page1> {
     } catch (e) {
       print(e);
     }
+  }
+
+  //----------------------------------Below here are dropdown list method----------------------------------
+  
+  List<DropdownMenuItem<String>> _getDropDownMenuItems() {
+    List<DropdownMenuItem<String>> items = new List();
+
+    items.add(new DropdownMenuItem(
+        value: '7', child: new Text('1 WEEK (7 DAYS)')));
+    items.add(new DropdownMenuItem(
+        value: '15', child: new Text('HALF MONTH (15 DAYS)')));
+    items.add(new DropdownMenuItem(
+        value: '30', child: new Text('1 MONTH (30 DAYS)')));
+
+    return items;
+  }
+
+  void changedDropDownItem(String selectedItem) {
+    setState(() {
+      _period = selectedItem;
+    });
   }
 }
  

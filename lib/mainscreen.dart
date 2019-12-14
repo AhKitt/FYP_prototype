@@ -3,10 +3,9 @@ import 'package:prototype3/advertiser.dart';
 import 'package:prototype3/loginscreen.dart';
 import 'package:prototype3/page1.dart';
 import 'package:progress_dialog/progress_dialog.dart';
-import 'package:toast/toast.dart';
+import 'package:prototype3/page2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
 
 double perpage = 1;
 
@@ -24,155 +23,224 @@ class _MainScreenState extends State<MainScreen> {
   List data;
   GlobalKey<RefreshIndicatorState> refreshKey;
   //final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-  //Position _currentPosition;
+
+  @override
+  void initState() {
+    super.initState();
+    refreshKey = GlobalKey<RefreshIndicatorState>();
+    init();
+    makeRequest();
+    print("below here is mainscreen");
+    print(widget.advertiser.email);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _createDrawer(),
       appBar: AppBar(
-        title: Text('MainScreen'),
+        title: Text('LBAS'),
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: 10),
-            Text('Your Advertisement',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Divider(thickness: 2.0,),
-            /*ListView.builder(
-                  //Step 6: Count the data
-                  itemCount: data == null ? 1 : data.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == data.length && perpage > 1) {
-                      return Container(
-                        width: 250,
-                        color: Colors.white,
-                        child: MaterialButton(
-                          child: Text(
-                            "Load More",
-                            style: TextStyle(color: Colors.black),
+      body: RefreshIndicator(
+              key: refreshKey,
+              color: Colors.blueAccent,
+              onRefresh: () async {
+                await refreshList();
+              },
+              child: ListView.builder(
+                  // Count the data  
+              itemCount: data == null ? 1 : data.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Container(
+                    child: Column(
+                      children: <Widget>[
+                        
+                        Text('Your Advertisement',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
                           ),
-                          onPressed: () {},
                         ),
-                      );
-                    }
-                    index -= 1;
-                    return Padding(
-                      padding: EdgeInsets.all(2.0),
-                      child: Card(
-                        elevation: 2,
-                        child: InkWell(
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Row(
-                              children: <Widget>[
-                                Container(
-                                  height: 100,
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white),
-                                      image: DecorationImage(
-                                    fit: BoxFit.fill,
-                                  image: AssetImage('assets/images/job.png'
-                                )))),
-                                SizedBox(width: 20),
-                                Expanded(
-                                  child: Container(
-                                    margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 10.0),
-                                    child: Column(
+                        Divider(thickness: 2.0,),
+                      ],
+                    ),
+                  );
+                }
+                if (index == data.length && perpage > 1) {
+                  return Container(
+                    width: 250,
+                    color: Colors.white,
+                    child: MaterialButton(
+                      child: Text(
+                        "Load More",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: () {},
+                    ),
+                  );
+                }
+                index -= 1;
+                return Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: Card(
+                    elevation: 2,
+                    child: InkWell(
+                      onTap: (){},
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                              height: 130,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white),
+                                  image: DecorationImage(
+                                fit: BoxFit.fill,
+                              // image: AssetImage(
+                              //   'assets/images/ads.png'
+                              // )
+                              image: NetworkImage(
+                                "http://mobilehost2019.com/LBAS/advertisement/${data[index]['adsimage']}.jpg"
+                              )
+                            ))),
+                            SizedBox(width: 20),
+                            Expanded(
+                              child: Container(
+                                padding: new EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Row(
                                       children: <Widget>[
-                                        Text(
-                                            data[index]['jobtitle']
-                                                .toString()
-                                                .toUpperCase(),
+                                        SizedBox(height: 5.0,),
+                                        Text('Title: ',
                                             style: TextStyle(
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.bold)),
+                                                fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         SizedBox(
-                                          height: 5,
+                                          width: 5,
                                         ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Icon(Icons.person,
-                                                ),
-                                            SizedBox(
-                                              width: 5,
+                                        Flexible(
+                                          child: Text(
+                                            data[index]['title']
+                                                    .toString(),
+                                            style: TextStyle(
+                                                fontSize: 16,
                                             ),
-                                            Flexible(
-                                              child: Text(
-                                                data[index]['jobowner']
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                    FontWeight.bold
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Icon(Icons.phone_android,
-                                                ),
-                                            SizedBox(
-                                              width: 5,
-                                            ),
-                                            Flexible(
-                                              child: Text(
-                                                data[index]['jobphone']
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Icon(Icons.location_on,
-                                                ),
-                                            SizedBox(
-                                              width: 5,
-                                            ),
-                                            Flexible(
-                                              child: Text(
-                                                data[index]['jobaddress']
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        //Text(data[index]['jobtime']),
                                       ],
                                     ),
-                                  ),
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Text('ADS ID: ',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            data[index]['adsid']
+                                                    .toString(),
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text('Post Date: ',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            data[index]['postdate']
+                                                    .toString(),
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text('Due Date: ',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            data[index]['duedate']
+                                                    .toString(),
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10.0,top: 4.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: <Widget>[
+                                          Container(
+                                            color: Colors.green,
+                                            padding: EdgeInsets.only(left: 3.0, right: 3.0),
+                                            child: Text(
+                                              data[index]['status']
+                                                      .toString(),
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    );
-                  }),*/
-          ],
-        ),
-      ),
+                    ),
+                  ),
+                );
+              }),
+            )
     );
   }
+
+  //----------------------------------Below here are general method----------------------------------
 
   Future<bool> _onBackPressAppBar() async {
     Navigator.pushReplacement(
@@ -183,7 +251,7 @@ class _MainScreenState extends State<MainScreen> {
     return Future.value(false);
   }
   
-
+  //----------------------------------Below here are drawer method----------------------------------
   Widget _createDrawer(){
     return Drawer(
         child: ListView(
@@ -197,7 +265,8 @@ class _MainScreenState extends State<MainScreen> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Page1(advertiser: advertiser)));
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Page2(advertiser: widget.advertiser)));
               },
             ),
             ListTile(
@@ -207,7 +276,8 @@ class _MainScreenState extends State<MainScreen> {
                 // Update the state of the app
                 // ...
                 // Then close the drawer
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Page1()));
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Page1(advertiser: widget.advertiser)));
               },
             ),
             ListTile(
@@ -218,7 +288,7 @@ class _MainScreenState extends State<MainScreen> {
                 // ...
                 // Then close the drawer
                 Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
+                  MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
               },
             ),
           ],
@@ -231,7 +301,9 @@ class _MainScreenState extends State<MainScreen> {
       accountName: Text(widget.advertiser.name),
       accountEmail: Text(widget.advertiser.email),
       currentAccountPicture: CircleAvatar(
-        backgroundImage: AssetImage('assets/images/download2.jpg'),
+        backgroundImage: NetworkImage(
+          "http://mobilehost2019.com/LBAS/profile/${widget.advertiser.email}.jpg"),
+        // backgroundImage: AssetImage('assets/images/download2.jpg'),
       ),
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -242,11 +314,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  //----------------------------------Below here are load advertisement method----------------------------------
   Future<String> makeRequest() async {
-    String urlLoadJobs = "http://mobilehost2019.com/LBAS/php/load_accepted_jobs.php";
+    String urlLoadJobs = "http://mobilehost2019.com/LBAS/php/load_myads.php";
     ProgressDialog pr = new ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
-    pr.style(message: "Loading All Accepted Jobs");
+    pr.style(message: "Loading Your Advertisement");
     pr.show();
     http.post(urlLoadJobs, body: {
       "email": widget.advertiser.email ?? "notavail",
@@ -254,7 +327,7 @@ class _MainScreenState extends State<MainScreen> {
     }).then((res) {
       setState(() {
         var extractdata = json.decode(res.body);
-        data = extractdata["jobs"];
+        data = extractdata["ads"];
         perpage = (data.length / 10);
         print("data");
         print(data);
@@ -264,6 +337,17 @@ class _MainScreenState extends State<MainScreen> {
       print(err);
       pr.dismiss();
     });
+    return null;
+  }
+
+  Future init() async {
+    this.makeRequest();
+    //_getCurrentLocation();
+  }
+
+  Future<Null> refreshList() async {
+    await Future.delayed(Duration(seconds: 2));
+    this.makeRequest();
     return null;
   }
 }
