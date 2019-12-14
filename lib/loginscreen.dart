@@ -45,10 +45,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        
-        onWillPop: _onBackPressAppBar,
-        child: Scaffold(
+    return Scaffold(
           resizeToAvoidBottomInset: false,
           body: new Container(
             //decoration: new BoxDecoration(color: Color.fromRGBO(199, 241, 255, 1)),
@@ -128,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-        ));
+        );
   }
 
   void _onLogin() {
@@ -298,18 +295,5 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isEmailValid(String email) {
     return RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
-  }
-
-  Future<bool> _onBackPressAppBar() async {
-    Advertiser advertiser = new Advertiser(
-          name: "not register",
-          email: "user@noregister",
-          phone: "not register",);
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MainScreen(advertiser: advertiser),
-        ));
-    return Future.value(false);
   }
 }

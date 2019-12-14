@@ -155,7 +155,7 @@ class _Page2State extends State<Page2> {
                       children: <Widget>[
                         MaterialButton(
                           onPressed: _changeName,
-                          child: Text("CHANGE NAME"),
+                          child: Text("CHANGE BUSINESS NAME"),
                         ),
                         MaterialButton(
                           onPressed: _changePassword,

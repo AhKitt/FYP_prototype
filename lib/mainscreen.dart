@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     refreshKey = GlobalKey<RefreshIndicatorState>();
     init();
-    makeRequest();
+    this.makeRequest();
     print("below here is mainscreen");
     print(widget.advertiser.email);
   }
